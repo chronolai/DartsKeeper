@@ -20,6 +20,8 @@ use LINE\LINEBot\Exception\UnknownMessageTypeException;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
+use App\DartsliveCard;
+
 class BotController extends Controller
 {
     public function __construct()
@@ -29,24 +31,37 @@ class BotController extends Controller
         $this->commands = [[
                 'name' => 'help',
                 'pattern' => '\/help',
-                'description' => 'help',
+                'description' => 'show help',
             ], [
                 'name' => 'info',
                 'pattern' => '\/info',
-                'description' => 'info',
+                'description' => 'list your cards infomation',
             ], [
                 'name' => 'reg',
-                'pattern' => '\/reg\s(\d+)\s(\d+)',
-                'description' => 'reg',
+                'pattern' => '\/reg\s(?<card_id>\d+)\s(?<password>\d+)',
+                'description' => '/reg 1234567890123456 1234',
             ], [
                 'name' => 'unreg',
-                'pattern' => '\/unreg',
-                'description' => 'unreg',
+                'pattern' => '\/unreg\s(?<card_id>\d+)',
+                'description' => '/unreg 1234567890123456',
             ], [
                 'name' => 'reply',
                 'pattern' => '(.*)',
                 'description' => 'reply',
             ]];
+    }
+
+    public function processCommands($message='')
+    {
+        foreach ($this->commands as $command) {
+            $output = [];
+            preg_match('/^'.$command['pattern'].'$/', $message, $output);
+            if (count($output) > 0) {
+                $command['source'] = $message;
+                $command['result'] = $output;
+                return $command;
+            }
+        }
     }
 
     public function replyMessage(Request $request)
@@ -93,19 +108,6 @@ class BotController extends Controller
         return response("ok", 200);
     }
 
-    public function processCommands($message='')
-    {
-        foreach ($this->commands as $command) {
-            $output = [];
-            preg_match('/^'.$command['pattern'].'$/', $message, $output);
-            if (count($output) > 0) {
-                $command['source'] = $message;
-                $command['result'] = $output;
-                return $command;
-            }
-        }
-    }
-
     public function handleMessageEvent($event='')
     {
         if (!($event instanceof TextMessage)) {
@@ -118,13 +120,60 @@ class BotController extends Controller
         $user_id = $event->getUserId();
         $message = sprintf('[%s] %s', $command['name'], $command['description']);
 
+        if ($command['name'] === "help") {
+            $message = '';
+            foreach ($this->commands as $command) {
+                $message.= $command['name']."\n";
+                $message.= "    ".$command['description']."\n";
+            }
+        }
+
+        if ($command['name'] === "info") {
+            $message = "卡片清單: \n";
+            $cards = DartsliveCard::where('line_id', $user_id)->get();
+            foreach ($cards as $card) {
+                $message.= $card['card_id']."\n";
+            }
+        }
+
+        if ($command['name'] === "reg") {
+            try {
+                $card = new DartsliveCard;
+                $card->line_id = $user_id;
+                $card->card_id = $command['result']['card_id'];
+                $card->password = $command['result']['password'];
+                $card->save();
+                $message = sprintf('登記卡號 %s ', $card->card_id);
+                Log::Info(sprintf('[reg] %s, %s, %s', $card->line_id, $card->card_id, $card->password));
+            } catch (\Illuminate\Database\QueryException $e) {
+                $errorCode = $e->errorInfo[1];
+                if($errorCode == 1062){
+                    $message = sprintf('%s 已經被登記過囉！', $card->card_id);
+                    Log::Error(sprintf('[error] %s duplicate', $card->card_id, $card->password));
+                }
+            }
+        }
+
+        if ($command['name'] === "unreg") {
+            try {
+                $card_id = $command['result']['card_id'];
+                $card = DartsliveCard::where('line_id', $user_id)->where('card_id', $card_id)->firstOrFail();
+                $card->delete();
+                $message = sprintf('移除卡號 %s', $card_id);
+                Log::Info(sprintf('[unreg] %s, %s', $user_id, $card_id));
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                $message = sprintf('沒有登記 %s 這張卡喔', $card_id);
+                Log::Info(sprintf('[unreg]  %s, %s', $user_id, $card_id));
+            }
+        }
+
         $resp = $this->bot->replyText($event->getReplyToken(), $message);
         Log::Info($resp->getHTTPStatus() . ': ' . $resp->getRawBody());
     }
 
     public function handleFollowEvent($event='')
     {
-        $message = sprintf('follow');
+        $message = sprintf('請使用 /help 察看說明');
         $resp = $this->bot->replyText($event->getReplyToken(), $message);
         Log::Info('handleFollowEvent');
         Log::Info($resp->getHTTPStatus() . ': ' . $resp->getRawBody());
