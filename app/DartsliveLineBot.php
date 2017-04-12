@@ -27,29 +27,30 @@ class DartsliveLineBot
 
     public function __construct()
     {
+        // @nbn8245a
         $this->client = new CurlHTTPClient(env('CHANNEL_TOKEN'));
         $this->linebot = new LINEBot($this->client, ['channelSecret' => env('CHANNEL_SECRET')]);
 
         $this->commands = [[
                 'name' => 'help',
-                'pattern' => '\/help',
-                'description' => 'show help',
+                'pattern' => 'help',
+                'description' => "show help",
             ], [
                 'name' => 'info',
-                'pattern' => '\/info',
+                'pattern' => 'info',
                 'description' => 'list your cards infomation',
             ], [
                 'name' => 'reg',
-                'pattern' => '\/reg\s(?<card_id>\d+)\s(?<password>\d+)',
-                'description' => '/reg 1234567890123456 1234',
+                'pattern' => 'reg\s(?<card_id>\d+)\s(?<password>\d+)',
+                'description' => 'reg card_id paswd',
             ], [
                 'name' => 'unreg',
-                'pattern' => '\/unreg\s(?<card_id>\d+)',
-                'description' => '/unreg 1234567890123456',
-            ], [
-                'name' => 'reply',
-                'pattern' => '(.*)',
-                'description' => 'reply',
+                'pattern' => 'unreg\s(?<card_id>\d+)',
+                'description' => 'unreg card_id',
+            // ], [
+            //     'name' => 'reply',
+            //     'pattern' => '(.*)',
+            //     'description' => 'reply',
             ]];
     }
 
