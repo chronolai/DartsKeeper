@@ -13,8 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\DartsliveGetBonus::class,
-        Commands\LinePushMessage::class,
+        Commands\DartsliveRun::class,
     ];
 
     /**
@@ -25,8 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        $schedule->command('dartslive:run')->cron('0 6,23 * * *');
     }
 
     /**
