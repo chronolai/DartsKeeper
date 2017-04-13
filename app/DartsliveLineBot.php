@@ -117,6 +117,10 @@ class DartsliveLineBot
             Log::Info('Non text message has come');
             return;
         }
+        if ($event->isGroupEvent()) {
+            Log::Info('Only user event now');
+            return;
+        }
 
         $command = $this->getCommand($event->getText());
         $func = "run".ucfirst($command['name'])."Command";
