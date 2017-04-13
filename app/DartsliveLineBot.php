@@ -182,12 +182,20 @@ class DartsliveLineBot
     {
         try {
             $user_id = $event->getUserId();
-            $card = new DartsliveCard;
-            $card->line_id = $user_id;
-            $card->card_id = $command['result']['card_id'];
-            $card->password = $command['result']['password'];
-            $card->save();
-            $message = sprintf('登記卡號 %s ', $card->card_id);
+            $site = new DartsliveSite;
+            if ($site->login($command['result']['card_id'], $command['result']['password'])) {
+	            $card = new DartsliveCard;
+	            $card->line_id = $user_id;
+	            $card->card_id = $command['result']['card_id'];
+	            $card->password = $command['result']['password'];
+                $card->name = $site->name;
+                $card->rating = $site->rating;
+                $card->coin = $site->coin + $site->bonus;
+	            $card->save();
+	            $message = sprintf('登記卡號 %s ', $card->card_id);
+            } else {
+	            $message = sprintf('登記失敗 (登入失敗)');
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             $err_code = $e->errorInfo[1];
             if($err_code == 1062){

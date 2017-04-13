@@ -53,13 +53,17 @@ class DartsliveSite
         preg_match_all($this->patterns['name'], $page, $name_match);
         preg_match_all($this->patterns['need'], $page, $need_match);
 
+        if (count($name_match[1]) === 0) {
+            return false;
+        }
+
         $this->card_id = $card_id;
         $this->password = $password;
         $this->rating = $rating_match[1][0];
         $this->name = $name_match[1][0];
         $this->need = count($need_match[1]) > 0;
         $this->getCoin();
-        return $this->need;
+        return true;
     }
 
     public function getCoin()

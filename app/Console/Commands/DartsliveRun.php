@@ -46,9 +46,9 @@ class DartsliveRun extends Command
         foreach ($cards as $card) {
             $site = new DartsliveSite();
             $linebot = new DartsliveLineBot();
-            
-            $need = $site->login($card['card_id'], $card['password']);
-            if ($need) {
+
+            $result = $site->login($card['card_id'], $card['password']);
+            if ($result && $site->need) {
                 $site->getBonus();
             }
 
