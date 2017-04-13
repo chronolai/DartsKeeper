@@ -122,7 +122,7 @@ class DartsliveLineBot
             return;
         }
 
-        $command = $this->getCommand($event->getText());
+        $command = $this->getCommand(strtolower($event->getText()));
         $func = "run".ucfirst($command['name'])."Command";
         return $this->$func($event, $command);
     }
