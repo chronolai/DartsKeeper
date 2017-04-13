@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\DartsliveRun::class,
+        Commands\DartsliveRemind::class,
     ];
 
     /**
@@ -25,6 +26,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('dartslive:run')->cron('0 6,23 * * *');
+        $schedule->command('dartslive:remind')->when(function () {
+            return \Carbon\Carbon::now('Asia/Taipei')->endOfMonth()->isToday();
+        })->cron('0 20 * * *');
     }
 
     /**

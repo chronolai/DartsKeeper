@@ -2,21 +2,19 @@
 
 namespace App\Console\Commands;
 
-use Artisan;
 use Illuminate\Console\Command;
 
 use App\DartsliveCard;
-use App\DartsliveSite;
 use App\DartsliveLineBot;
 
-class DartsliveRun extends Command
+class DartsliveRemind extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dartslive:run';
+    protected $signature = 'dartslive:remind';
 
     /**
      * The console command description.
@@ -45,19 +43,13 @@ class DartsliveRun extends Command
         $linebot = new DartsliveLineBot();
         $cards = DartsliveCard::orderBy('line_id', 'desc')->get();
         foreach ($cards as $card) {
-            $site = new DartsliveSite();
-
-            $result = $site->login($card['card_id'], $card['password']);
-            if ($result && $site->need) {
-                $site->getBonus();
-            }
-
-            $card->name = $site->name;
-            $card->rating = $site->rating;
-            $card->coin = $site->coin + $site->bonus;
-            $card->save();
-
-            $message = sprintf("[%s]\n%s, Rating: %s, Coin: %s+%s", $site->card_id, $site->name, $site->rating, $site->coin, $site->bonus);
+            // if ($card->line_id !== env("ADMIN_LINE_ID")) {
+            //     continue;
+            // }
+            $now = \Carbon\Carbon::now('Asia/Taipei');
+            $end = $now->copy()->endOfMonth();
+            $days = $end->diffInDays($now);
+            $message = sprintf("還剩 %s 天!\n[%s] 還有 %s Coin, 請記得去購買 theme", $days, $card->card_id, $card->coin);
             $linebot->pushMessage($card->line_id, $message);
             $this->line($message);
         }
