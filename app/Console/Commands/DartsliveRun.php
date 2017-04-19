@@ -55,9 +55,10 @@ class DartsliveRun extends Command
             $card->name = $site->name;
             $card->rating = $site->rating;
             $card->coin = $site->coin + $site->bonus;
+            $card->expire = $site->expire;
             $card->save();
 
-            $message = sprintf("[%s]\n%s, Rating: %s, Coin: %s+%s", $site->card_id, $site->name, $site->rating, $site->coin, $site->bonus);
+            $message = sprintf("[%s]\n%s, Rating: %s, Coin: %s(%s)+%s", $site->card_id, $site->name, $site->rating, $site->coin, $site->expire, $site->bonus);
             $linebot->pushMessage($card->line_id, $message);
             $this->line($message);
         }

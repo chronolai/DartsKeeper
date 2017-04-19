@@ -176,7 +176,7 @@ class DartsliveLineBot
         $messages = ["卡片清單:"];
         $cards = DartsliveCard::where('line_id', $user_id)->get();
         foreach ($cards as $card) {
-            array_push($messages, sprintf("[%s]\n%s, Rating: %s, Coin: %s", $card['card_id'], $card['name'], $card['rating'], $card['coin']));
+            array_push($messages, sprintf("[%s]\n%s, Rating: %s, Coin: %s(%s)", $card['card_id'], $card['name'], $card['rating'], $card['coin'], $card['expire']));
         }
         $message = implode("\n", $messages);
         return [$event->getReplyToken(), $message];

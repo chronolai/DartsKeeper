@@ -14,6 +14,7 @@ class DartsliveSite
         $this->password = '';
         $this->name = '';
         $this->coin = 0;
+        $this->expire = 0;
         $this->bonus = 0;
         $this->need = false;
         $this->rating = 0;
@@ -22,7 +23,7 @@ class DartsliveSite
             'rating' => '/\<li id=\"btn_rt_(\d+)\"\>/',
             'name' => '/<title>DARTSLIVE \[(.*)\]<\/title>/',
             'need' => '/(<div class=\"bonusGet\">GET!<\/div>)/',
-            'coin' => '/<div class=\"coinNumArea\"><span class=\"num\">(\d+)<\/span><span class=\"thisMonth\">\(.*\)<\/span><\/div>/',
+            'coin' => '/<div class=\"coinNumArea\"><span class=\"num\">(?<coin>\d+)<\/span><span class=\"thisMonth\">\((?<expire>\d+)\)<\/span><\/div>/',
             'bonus' => '/\<span class=\"coinNum\"\>(\d+)\<\/span\>/',
         ];
 
@@ -73,7 +74,8 @@ class DartsliveSite
 
         preg_match_all($this->patterns['coin'], $page, $coin_match);
 
-        $this->coin = $coin_match[1][0];
+        $this->coin = $coin_match['coin'][0];
+        $this->expire = $coin_match['expire'][0];
         return $this->coin;
     }
 

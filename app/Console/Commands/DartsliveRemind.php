@@ -49,7 +49,7 @@ class DartsliveRemind extends Command
             $now = \Carbon\Carbon::now('Asia/Taipei');
             $end = $now->copy()->endOfMonth();
             $days = $end->diffInDays($now);
-            $message = sprintf("還剩 %s 天!\n[%s] 還有 %s Coin, 請記得去購買 theme", $days, $card->card_id, $card->coin);
+            $message = sprintf("還剩 %s 天!\n[%s] 還有 %s(%s) Coin, 請記得去購買 theme", $days, $card->card_id, $card->coin, $card->expire);
             $linebot->pushMessage($card->line_id, $message);
             $this->line($message);
         }
